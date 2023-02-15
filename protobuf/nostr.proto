@@ -1,8 +1,10 @@
-syntax = "proto3";
-
 // NIPs complete: 01 - 10
 // skipped 11
 // TODO: 12 onward
+
+enum nostrProtobufVersion {
+    Version1 = 1;
+}
 
 /************************************************
  * EVENT message-type
@@ -21,6 +23,10 @@ message PubkeyTag {                 // NIP-01
     string petname = 3;             // NIP-02
 }
 
+message Tag {
+    repeated string data = 1;
+}
+
 message Tags {                      // NIP-01
     repeated EventTag etags = 1;    // NIP-01
     repeated PubkeyTag ptags = 2;   // NIP-01
@@ -29,48 +35,63 @@ message Tags {                      // NIP-01
 message Event {                     // NIP-01
     bytes id = 1;                   // NIP-01
     bytes pubkey = 2;               // NIP-01
-    sfixed64 created_at = 3;        // NIP-01
+    int64 created_at = 3;           // NIP-01
     int64 kind = 4;                 // NIP-01
-    repeated Tags tags = 5;         // NIP-01
+    Tags tags = 5;                  // NIP-01
     string content = 6;             // NIP-01, NIP-04
     bytes sig = 7;                  // NIP-01
     bytes ots = 8;                  // NIP-03
+}
+
+message EventCmd {
+    string subscription_id = 1;
+    Event event = 2;
 }
 
 /************************************************
  * REQ message-type
  * NIP-01
  */
-message Filter {
+message Filters {
     repeated bytes ids = 1;         // NIP-01
     repeated bytes authors = 2;     // NIP-01
     repeated int64 kinds = 3;       // NIP-01
-    repeated EventTag es = 4;       // NIP-01
-    repeated PubkeyTag ps = 5;      // NIP-01
-    sfixed64 since = 6;             // NIP-01
-    sfixed64 until = 7;             // NIP-01
+    repeated Tag es = 4;            // NIP-01
+    repeated Tag ps = 5;            // NIP-01
+    int64 since = 6;                // NIP-01
+    int64 until = 7;                // NIP-01
     int64 limit = 8;                // NIP-01
 }
 
-message Request {
+message RequestCmd {
     string subscription_id = 1;     // NIP-01
-    repeated Filter filters = 2;    // NIP-01
+    Filters filters = 2;             // NIP-01
 }
 
 /************************************************
  * CLOSE message-type
  * NIP-01
  */
-message Close {
+message CloseCmd {
     string subscription_id = 1;     // NIP-01
+}
+
+/************************************************
+ * NOTICE message-type
+ * NIP-01
+ */
+ message NoticeCmd {
+    string message = 1;             // NIP-01
 }
 
 /************************************************
  * client-to-relay packet
  * NIP-01
  */
-message clientToRelay {
-    repeated Event EVENT = 1;       // NIP-01
-    repeated Request REQ = 2;       // NIP-01
-    repeated Close CLOSE = 3;       // NIP-01
+message nostr {
+    nostrProtobufVersion protobufVersion = 1;
+    EventCmd EVENT = 2;       // NIP-01
+    RequestCmd REQ = 3;       // NIP-01
+    CloseCmd CLOSE = 4;       // NIP-01
+    NoticeCmd NOTICE = 5;     // NIP-01
 }
